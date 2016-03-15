@@ -5,7 +5,7 @@ dashboard-template-angular
 Minimal template for client-side dashboard using AngularJS
 ----------------------------------------------------------
 
-Simple client-side dashboard template with inline documentation to be used as a friendly starting point for custom development.
+Simple client-side dashboard template with inline documentation to be used as a friendly starting point for custom development.  See it live at [reelyactive.github.io/dashboard-template-angular](http://reelyactive.github.io/dashboard-template-angular).
 
 
 License
