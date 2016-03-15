@@ -55,6 +55,7 @@ angular.module('reelyactive.cormorant', [])
     };
 
     return {
-      getStory: get
+      getStory: get,
+      getStories: function() { return stories; }
     }
   });

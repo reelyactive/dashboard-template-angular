@@ -42,6 +42,8 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   // Variables accessible in the HTML scope
   $scope.devices = beaver.getDevices();
   $scope.stats = beaver.getStats();
+  $scope.stories = cormorant.getStories();
+  $scope.selectedStory = 'Select a story from the list';
   $scope.events = [];
 
   // beaver.js listens on the websocket for events
@@ -49,17 +51,23 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
 
   // Handle events pre-processed by beaver.js
   beaver.on('appearance', function(data) {
-    updateEvents('appearance', data);
+    handleEvent('appearance', data);
   });
   beaver.on('displacement', function(data) {
-    updateEvents('displacement', data);
+    handleEvent('displacement', data);
   });
   beaver.on('keep-alive', function(data) {
-    updateEvents('keep-alive', data);
+    handleEvent('keep-alive', data);
   });
   beaver.on('disappearance', function(data) {
-    updateEvents('disappearance', data);
+    handleEvent('disappearance', data);
   });
+
+  // Handle an event
+  function handleEvent(type, data) {
+    updateEvents(type, data);
+    updateStories(data);
+  }
 
   // Update the event array (first in, first out)
   function updateEvents(type, data) {
@@ -70,5 +78,18 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
     if (length > EVENT_HISTORY) {
       $scope.events.pop();
     }
+  }
+
+  // Update the collection of stories
+  function updateStories(data) {
+    if(data.hasOwnProperty('associations') &&
+       data.associations.hasOwnProperty('url')) {
+      cormorant.getStory(data.associations.url, function() {});
+    }
+  }
+
+  // Update the selected story
+  $scope.selectStory = function(url) {
+    $scope.selectedStory = JSON.stringify($scope.stories[url], null, "  ");
   }
 });
