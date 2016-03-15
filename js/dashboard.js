@@ -86,6 +86,14 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
        data.associations.hasOwnProperty('url')) {
       cormorant.getStory(data.associations.url, function() {});
     }
+    for(var cDecoding = 0; cDecoding < data.tiraid.radioDecodings.length;
+        cDecoding++) {
+      var decoding = data.tiraid.radioDecodings[cDecoding];
+      if(decoding.hasOwnProperty('associations') &&
+         decoding.associations.hasOwnProperty('url')) {
+        cormorant.getStory(decoding.associations.url, function() {});
+      }
+    }
   }
 
   // Update the selected story
