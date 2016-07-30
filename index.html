@@ -41,7 +41,13 @@
       </nav>
       <!----- BEGIN CONTENT SECTION ----------------------------------------->
       <div class="container-fluid">
+        <!----- beaver.js --------------------------------------------------->
         <div class="row">
+          <div class="col-md-2">
+            <a href="https://github.com/reelyactive/beaver" target="_blank">
+              <img class="img-responsive" src="images/beaver-bubble.png">
+            </a>
+          </div>
           <div class="col-md-3">
             <!----- STATISTICS ---------------------------------------------->
             <!-- You have access to a variable called stats which has four -->
@@ -76,7 +82,7 @@
               </tbody>
             </table>
           </div>
-          <div class="col-md-9">
+          <div class="col-md-7">
             <!----- EVENTS -------------------------------------------------->
             <!-- In dashboard.js, we created an array called events which  -->
             <!-- includes the n most recent events.  Each event has two    -->
@@ -110,8 +116,14 @@
             </table>
           </div>
         </div>
+        <!----- cormorant.js ------------------------------------------------>
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-2">
+            <a href="https://github.com/reelyactive/cormorant" target="_blank">
+              <img class="img-responsive" src="images/cormorant-bubble.png">
+            </a>
+          </div>
+          <div class="col-md-5">
             <!----- STORIES ------------------------------------------------->
             <!-- You have access to a variable called stories which has    -->
             <!-- URLs as properties.  The URLs are associated with         -->
@@ -136,15 +148,22 @@
               </tbody>
             </table>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-5">
             <table class="table table-hover">
               <caption> SELECTED STORY </caption>
             </table>
             <pre> {{selectedStory}} </pre>
           </div>
         </div>
+        <!----- cuttlefish.js ----------------------------------------------->
         <div class="row">
-          <div class="col-md-12">
+          <div class="col-md-2">
+            <a href="https://github.com/reelyactive/cuttlefish"
+               target="_blank">
+              <img class="img-responsive" src="images/cuttlefish-bubble.png">
+            </a>
+          </div>
+          <div class="col-md-10">
             <!----- RENDERING ----------------------------------------------->
             <!-- Rendering a story simply requires the bubble directive.   -->
             <!-- Specify the story (JSON) source and the size.             -->
@@ -153,7 +172,8 @@
               <caption> RENDERING OF STORIES </caption>
             </table>
             <div class="well blue" style="height:340px; overflow:auto">
-              <div ng-repeat="(url, story) in stories" style="float:left; height:300px">
+              <div ng-repeat="(url, story) in stories"
+                   style="float:left; height:300px">
                 <bubble json="story" size="240px"></bubble>
               </div>
             </div>
