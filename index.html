@@ -150,10 +150,12 @@
             <!-- Specify the story (JSON) source and the size.             -->
             <!--------------------------------------------------------------->
             <table class="table table-hover">
-              <caption> RENDERING OF SELECTED STORY </caption>
+              <caption> RENDERING OF STORIES </caption>
             </table>
-            <div class="well">
-              <bubble json="selectedJSON" size="240px"></bubble>
+            <div class="well blue" style="height:340px; overflow:auto">
+              <div ng-repeat="(url, story) in stories" style="float:left; height:300px">
+                <bubble json="story" size="240px"></bubble>
+              </div>
             </div>
           </div>
         </div>

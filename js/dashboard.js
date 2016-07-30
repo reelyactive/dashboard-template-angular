@@ -5,7 +5,7 @@
 
 
 // Constant definitions
-DEFAULT_SOCKET_URL = 'http://www.hyperlocalcontext.com/notman';
+DEFAULT_SOCKET_URL = 'http://www.hyperlocalcontext.com/reelyactive';
 DEFAULT_ASSOCIATIONS_URL = 'http://www.hyperlocalcontext.com/associations/';
 EVENT_HISTORY = 4;
 
@@ -46,19 +46,6 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   $scope.stories = cormorant.getStories();
   $scope.selectedStory = 'Select a story from the list';
   $scope.events = [];
-  $scope.selectedJSON = {
-    "@context": {
-      "schema": "http://schema.org/"
-    },
-    "@graph": [
-      {
-        "@id": "product",
-        "@type": "schema:Product",
-        "schema:name": "Select a story above",
-        "schema:image": "images/void.png"
-      }
-    ]
-  };
 
   // beaver.js listens on the websocket for events
   beaver.listen(Socket);
@@ -113,6 +100,5 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   // Update the selected story
   $scope.selectStory = function(url) {
     $scope.selectedStory = JSON.stringify($scope.stories[url], null, "  ");
-    $scope.selectedJSON = $scope.stories[url];
   }
 });
