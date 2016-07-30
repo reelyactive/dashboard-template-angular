@@ -4,6 +4,7 @@
     <title> reelyActive Dashboard Template </title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style/bubble.css">
     <link rel="stylesheet" href="style/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
@@ -12,6 +13,7 @@
     <script type="text/javascript" src="js/socket.min.js"></script>
     <script type="text/javascript" src="js/beaver.js"></script>
     <script type="text/javascript" src="js/cormorant.js"></script>
+    <script type="text/javascript" src="js/cuttlefish.js"></script>
     <script type="text/javascript" src="js/dashboard.js"></script>
   </head>
   <body ng-app="dashboard">
@@ -139,6 +141,20 @@
               <caption> SELECTED STORY </caption>
             </table>
             <pre> {{selectedStory}} </pre>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <!----- RENDERING ----------------------------------------------->
+            <!-- Rendering a story simply requires the bubble directive.   -->
+            <!-- Specify the story (JSON) source and the size.             -->
+            <!--------------------------------------------------------------->
+            <table class="table table-hover">
+              <caption> RENDERING OF SELECTED STORY </caption>
+            </table>
+            <div class="well">
+              <bubble json="selectedJSON" size="240px"></bubble>
+            </div>
           </div>
         </div>
       </div>

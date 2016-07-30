@@ -14,12 +14,13 @@ EVENT_HISTORY = 4;
  * dashboard Module
  * All of the JavaScript specific to the dashboard is contained inside this
  * angular module.  The only external dependencies are:
- * - beaver and cormorant (reelyActive)
+ * - beaver, cormorant and cuttlefish (reelyActive)
  * - socket.io (btford)
  * - ngSanitize (angular)
  */
 angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
-                             'reelyactive.cormorant', 'ngSanitize'])
+                             'reelyactive.cormorant',
+                             'reelyactive.cuttlefish', 'ngSanitize'])
 
 
 /**
@@ -45,6 +46,19 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   $scope.stories = cormorant.getStories();
   $scope.selectedStory = 'Select a story from the list';
   $scope.events = [];
+  $scope.selectedJSON = {
+    "@context": {
+      "schema": "http://schema.org/"
+    },
+    "@graph": [
+      {
+        "@id": "product",
+        "@type": "schema:Product",
+        "schema:name": "Select a story above",
+        "schema:image": "images/void.png"
+      }
+    ]
+  };
 
   // beaver.js listens on the websocket for events
   beaver.listen(Socket);
@@ -99,5 +113,6 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   // Update the selected story
   $scope.selectStory = function(url) {
     $scope.selectedStory = JSON.stringify($scope.stories[url], null, "  ");
+    $scope.selectedJSON = $scope.stories[url];
   }
 });
