@@ -129,30 +129,36 @@
             <!-- URLs as properties.  The URLs are associated with         -->
             <!-- devices.  The JSON fetched from the URL is included.      -->
             <!--------------------------------------------------------------->
-            <table class="table table-hover">
-              <caption> STORIES ASSOCIATED WITH DEVICES </caption>
-              <thead>
-                <tr>
-                  <th> URL </th>
-                  <th> Select story as </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr ng-repeat="(url, story) in stories">
-                  <td> <a ng-href="{{url}}" target="_blank">{{url}}</a> </td>
-                  <td>
-                    <button type="button" class="btn btn-xs"
-                            ng-click="selectStory(url)"> JSON </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div style="height:320px; overflow:auto">
+              <table class="table table-hover">
+                <caption> STORIES ASSOCIATED WITH DEVICES </caption>
+                <thead>
+                  <tr>
+                    <th> URL </th>
+                    <th> Select </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="(url, story) in stories">
+                    <td> <a ng-href="{{url}}" target="_blank">{{url}}</a> </td>
+                    <td>
+                      <button type="button" class="btn btn-xs"
+                              ng-class="url === selectedUrl ? 'btn-info' :
+                                                              'btn-default'"
+                              ng-click="selectStory(url)"> JSON </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           <div class="col-md-5">
-            <table class="table table-hover">
-              <caption> SELECTED STORY </caption>
-            </table>
-            <pre> {{selectedStory}} </pre>
+            <div style="height:320px; overflow:auto">
+              <table class="table table-hover">
+                <caption> SELECTED STORY </caption>
+              </table>
+              <pre> {{selectedStory}} </pre>
+            </div>
           </div>
         </div>
         <!----- cuttlefish.js ----------------------------------------------->

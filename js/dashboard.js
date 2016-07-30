@@ -5,7 +5,7 @@
 
 
 // Constant definitions
-DEFAULT_SOCKET_URL = 'http://www.hyperlocalcontext.com/reelyactive';
+DEFAULT_SOCKET_URL = 'http://www.hyperlocalcontext.com/notman';
 DEFAULT_ASSOCIATIONS_URL = 'http://www.hyperlocalcontext.com/associations/';
 EVENT_HISTORY = 4;
 
@@ -45,6 +45,7 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   $scope.stats = beaver.getStats();
   $scope.stories = cormorant.getStories();
   $scope.selectedStory = 'Select a story from the list';
+  $scope.selectedUrl = null;
   $scope.events = [];
 
   // beaver.js listens on the websocket for events
@@ -85,20 +86,33 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   function updateStories(data) {
     if(data.hasOwnProperty('associations') &&
        data.associations.hasOwnProperty('url')) {
-      cormorant.getStory(data.associations.url, function() {});
+      cormorant.getStory(data.associations.url, function() {
+        selectFirstStory();
+      });
     }
     for(var cDecoding = 0; cDecoding < data.tiraid.radioDecodings.length;
         cDecoding++) {
       var decoding = data.tiraid.radioDecodings[cDecoding];
       if(decoding.hasOwnProperty('associations') &&
          decoding.associations.hasOwnProperty('url')) {
-        cormorant.getStory(decoding.associations.url, function() {});
+        cormorant.getStory(decoding.associations.url, function() {
+          selectFirstStory();
+        });
       }
+    }
+  }
+
+  // Automatically select the first story
+  function selectFirstStory() {
+    var urls = Object.keys($scope.stories);
+    if(urls.length === 1) {
+      $scope.selectStory(urls[0]);
     }
   }
 
   // Update the selected story
   $scope.selectStory = function(url) {
     $scope.selectedStory = JSON.stringify($scope.stories[url], null, "  ");
+    $scope.selectedUrl = url;
   }
 });
