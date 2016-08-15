@@ -6,7 +6,6 @@
 
 // Constant definitions
 DEFAULT_SOCKET_URL = 'http://www.hyperlocalcontext.com/notman';
-DEFAULT_ASSOCIATIONS_URL = 'http://www.hyperlocalcontext.com/associations/';
 EVENT_HISTORY = 4;
 
 
@@ -52,53 +51,44 @@ angular.module('dashboard', ['btford.socket-io', 'reelyactive.beaver',
   beaver.listen(Socket);
 
   // Handle events pre-processed by beaver.js
-  beaver.on('appearance', function(data) {
-    handleEvent('appearance', data);
+  beaver.on('appearance', function(event) {
+    handleEvent('appearance', event);
   });
-  beaver.on('displacement', function(data) {
-    handleEvent('displacement', data);
+  beaver.on('displacement', function(event) {
+    handleEvent('displacement', event);
   });
-  beaver.on('keep-alive', function(data) {
-    handleEvent('keep-alive', data);
+  beaver.on('keep-alive', function(event) {
+    handleEvent('keep-alive', event);
   });
-  beaver.on('disappearance', function(data) {
-    handleEvent('disappearance', data);
+  beaver.on('disappearance', function(event) {
+    handleEvent('disappearance', event);
   });
 
   // Handle an event
-  function handleEvent(type, data) {
-    updateEvents(type, data);
-    updateStories(data);
+  function handleEvent(type, event) {
+    updateEvents(type, event);
+    updateStories(event);
   }
 
   // Update the event array (first in, first out)
-  function updateEvents(type, data) {
-    var length = $scope.events.unshift({
-      type: type,
-      tiraid: data.tiraid
-    });
+  function updateEvents(type, event) {
+    var length = $scope.events.unshift(event);
     if (length > EVENT_HISTORY) {
       $scope.events.pop();
     }
   }
 
   // Update the collection of stories
-  function updateStories(data) {
-    if(data.hasOwnProperty('associations') &&
-       data.associations.hasOwnProperty('url')) {
-      cormorant.getStory(data.associations.url, function() {
+  function updateStories(event) {
+    if(event.hasOwnProperty('deviceUrl')) {
+      cormorant.getStory(event.deviceUrl, function() {
         selectFirstStory();
       });
     }
-    for(var cDecoding = 0; cDecoding < data.tiraid.radioDecodings.length;
-        cDecoding++) {
-      var decoding = data.tiraid.radioDecodings[cDecoding];
-      if(decoding.hasOwnProperty('associations') &&
-         decoding.associations.hasOwnProperty('url')) {
-        cormorant.getStory(decoding.associations.url, function() {
-          selectFirstStory();
-        });
-      }
+    if(event.hasOwnProperty('receiverUrl')) {
+      cormorant.getStory(event.receiverUrl, function() {
+        selectFirstStory();
+      });
     }
   }
 

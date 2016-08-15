@@ -101,16 +101,15 @@
               </thead>
               <tbody>
                 <tr ng-repeat="(id, event) in events">
-                  <td> <tt> {{event.tiraid.identifier.value}} </tt> </td>
-                  <td> {{event.type}} </td>
+                  <td> <tt> {{event.deviceId}} </tt> </td>
+                  <td> {{event.event}} </td>
                   <td>
                     <tt>
-                      {{event.tiraid.radioDecodings[0].associations.directory
-                        || event.tiraid.radioDecodings[0].identifier.value}}
+                      {{event.receiverDirectory || event.receiverId}}
                     </tt>
                   </td>
-                  <td> {{event.tiraid.radioDecodings[0].rssi}} </td>
-                  <td> {{event.tiraid.timestamp}} </td>
+                  <td> {{event.rssi}} </td>
+                  <td> {{event.time}} </td>
                 </tr>
               </tbody>
             </table>
