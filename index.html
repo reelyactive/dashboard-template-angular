@@ -13,6 +13,7 @@
     <script type="text/javascript" src="js/socket.min.js"></script>
     <script type="text/javascript" src="js/beaver.js"></script>
     <script type="text/javascript" src="js/cormorant.js"></script>
+    <script type="text/javascript" src="js/bubble.js"></script>
     <script type="text/javascript" src="js/cuttlefish.js"></script>
     <script type="text/javascript" src="js/dashboard.js"></script>
   </head>
@@ -178,7 +179,7 @@
             </table>
             <div class="well blue" style="height:340px; overflow:auto">
               <div ng-repeat="(url, story) in stories"
-                   style="float:left; height:300px">
+                   style="float:left; height:320px; width:320px">
                 <bubble json="story" size="240px"></bubble>
               </div>
             </div>
