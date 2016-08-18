@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style/bubble.css">
     <link rel="stylesheet" href="style/main.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.4.7/angular.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/0.13.4/ui-bootstrap-tpls.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.0.2/ui-bootstrap-tpls.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.5.0/angular-sanitize.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js"></script>
     <script type="text/javascript" src="js/socket.min.js"></script>
@@ -179,8 +179,8 @@
             </table>
             <div class="well blue" style="height:340px; overflow:auto">
               <div ng-repeat="(url, story) in stories"
-                   style="float:left; height:320px; width:320px">
-                <bubble json="story" size="240px"></bubble>
+                   style="float:left; height:340px; width:340px">
+                <bubble json="story" size="240px" toggle="true"></bubble>
               </div>
             </div>
           </div>
