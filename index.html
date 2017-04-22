@@ -43,30 +43,48 @@
         <div class="row">
           <!----- Left column (Charts) -------------------------------------->
           <div class="col-sm-12 col-md-7 col-lg-8">
-            <table class="table">
-              <caption> DEVICES & DISPLACEMENTS IN TIME </caption>
-            </table>
-            <div>
-              <canvas id="line" class="chart chart-line"
-                      height="25" width="100"
-                      chart-data="linechart.data"
-                      chart-labels="linechart.labels"
-                      chart-series="linechart.series"
-                      chart-colors="lineChartColors"
-                      chart-options="lineChartOptions">
-              </canvas>
+            <div class="row">
+              <div class="col-md-12">
+                <table class="table">
+                  <caption> DEVICES & DISPLACEMENTS IN TIME </caption>
+                </table>
+                <canvas id="line" class="chart chart-line"
+                        height="25" width="100"
+                        chart-data="linechart.data"
+                        chart-labels="linechart.labels"
+                        chart-series="linechart.series"
+                        chart-colors="lineChartColors"
+                        chart-options="lineChartOptions">
+                </canvas>
+              </div>
             </div>
-            <table class="table">
-              <caption> POPULAR DEVICES </caption>
-            </table>
-            <div>
-              <canvas id="doughnut" class="chart chart-doughnut"
-                      height="25" width="100"
-                      chart-data="doughnutchart.data"
-                      chart-labels="doughnutchart.labels"
-                      chart-colors="doughnutChartColors"
-                      chart-options="doughnutChartOptions">
-              </canvas>
+            <div class="row well well-lg" style="background-color:#fcfcfc">
+              <div class="col-md-6">
+                <canvas id="doughnut" class="chart chart-doughnut"
+                        height="50" width="100"
+                        chart-data="doughnutchart.data"
+                        chart-labels="doughnutchart.labels"
+                        chart-colors="doughnutChartColors"
+                        chart-options="doughnutChartOptions">
+                </canvas>
+              </div>
+              <div class="col-md-6">
+                <table class="table table-hover">
+                  <tbody>
+                    <tr ng-repeat="(id, story) in stories | limitTo: 8">
+                      <td>
+                        <span class="btn btn-xs btn-block"
+                              ng-style="{'background-color': doughnutChartColors[id], 'color': 'white'}">
+                          <b>{{story.count}}</b>
+                        </span> </td>
+                      <td>
+                        <a ng-if="story.url" ng-href="{{story.url}}"
+                           target="_blank"> {{story.type}} </a>
+                        <span ng-if="!story.url"> {{story.type}} </span>
+                      </td>
+                    </tr>
+                </table>
+              </div>
             </div>
             <p> &nbsp; </p>
           </div>

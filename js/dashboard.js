@@ -25,18 +25,18 @@ LINE_CHART_OPTIONS = {
     }]
   }
 };
-DOUGHNUT_CHART_SAMPLES = 10;
+DOUGHNUT_CHART_SAMPLES = 8;
 DOUGHNUT_CHART_OPTIONS = {
   legend: {
-    display: true,
-    position: 'left'
+    display: false
   },
   animation: {
     animateRotate: false
   }
 };
 LINE_CHART_COLORS = [ '#ff6900', '#0770a2', '#aec844', '#5a5a5a' ];
-DOUGHNUT_CHART_COLORS = [ "#076FA2", "#FF6A00", "#AFC844", "#5A5A5A", "#70BBD3", "#FEBE1D", "#8B0700", "#4896BC", "#FFA464", "#91AB25", "#8A8A8A", "#CD3C34", "#034463", "#9B4000", "#6F860B", "#040303", "#2C809C", "#A77800", "#3C0300", "#03597C", "#CC5400", "#90A61E", "#263238", "#F15C60" ];
+DOUGHNUT_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
+                          '#f8b586', '#82b6cf', '#a9a9a9', '#5a5a5a' ];
 
 
 /**
@@ -75,7 +75,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
   $scope.cumStats = beaver.getStats();
   $scope.curStats = { appearances: 0, keepalives: 0,
                       displacements: 0, disappearances: 0 };
-  $scope.stories = cormorant.getStories();
+  $scope.stories = [];
   $scope.linechart = { labels: [], series: LINE_CHART_SERIES, data: [[],[]] };
   $scope.doughnutchart = { labels: [], data: [] };
   $scope.lineChartColors = LINE_CHART_COLORS;
@@ -86,6 +86,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
   // Variables accessible in the local scope
   var devices = beaver.getDevices();
   var directories = beaver.getDirectories();
+  var stories = cormorant.getStories();
   var storyStats = {};
   var appearances = 0;
   var keepalives = 0;
@@ -194,6 +195,8 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     var data = [];
     var storyStatsArray = Object.values(storyStats);
     var sampleLimit = Math.min(storyStatsArray.length, DOUGHNUT_CHART_SAMPLES);
+    var cStory = 0;
+    var otherCount = 0;
 
     function compare(a,b) {
       if(a.count < b.count) return 1;
@@ -203,12 +206,22 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
 
     storyStatsArray.sort(compare);
 
-    for(var cStory = 0; cStory < sampleLimit; cStory++) {
+    for(cStory = 0; cStory < (sampleLimit - 1); cStory++) {
       labels.push(storyStatsArray[cStory].type);
       data.push(storyStatsArray[cStory].count);
     }
+    while(cStory < storyStatsArray.length) {
+      otherCount += storyStatsArray[cStory++].count;
+    }
+    labels.push('All others');
+    data.push(otherCount);
+
+    $scope.stories = storyStatsArray.slice(0, sampleLimit - 1);
+    $scope.stories.push( { type: 'All others', count: otherCount } );
+
     $scope.doughnutchart.labels = labels;
     $scope.doughnutchart.data = data;
+
   }
 
   // Add the given story URL to the statistics
@@ -224,7 +237,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
       else if(type.indexOf('Product') >= 0) {
         type = type.substr(type.indexOf('Product'));
       }
-      storyStats[url] = { type: type, count: 1 };
+      storyStats[url] = { type: type, count: 1, url: url };
     }
   }
 
