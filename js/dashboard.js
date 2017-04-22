@@ -34,7 +34,7 @@ DOUGHNUT_CHART_OPTIONS = {
     animateRotate: false
   }
 };
-LINE_CHART_COLORS = [ '#ff6900', '#0770a2', '#aec844', '#5a5a5a' ];
+LINE_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#5a5a5a' ];
 DOUGHNUT_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
                           '#f8b586', '#82b6cf', '#a9a9a9', '#5a5a5a' ];
 
