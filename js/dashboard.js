@@ -25,6 +25,7 @@ LINE_CHART_OPTIONS = {
     }]
   }
 };
+BAR_CHART_OPTIONS = {};
 DOUGHNUT_CHART_SAMPLES = 8;
 DOUGHNUT_CHART_OPTIONS = {
   legend: {
@@ -35,6 +36,7 @@ DOUGHNUT_CHART_OPTIONS = {
   }
 };
 LINE_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#5a5a5a' ];
+BAR_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844' ];
 DOUGHNUT_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
                           '#f8b586', '#82b6cf', '#a9a9a9', '#5a5a5a' ];
 
@@ -75,11 +77,15 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
   $scope.cumStats = beaver.getStats();
   $scope.curStats = { appearances: 0, keepalives: 0,
                       displacements: 0, disappearances: 0 };
+  $scope.rssi = {};
   $scope.stories = [];
   $scope.linechart = { labels: [], series: LINE_CHART_SERIES, data: [[],[]] };
+  $scope.barchart = { labels: [ 'Max RSSI', 'Avg RSSI', 'Min RSSI' ], data: [] };
   $scope.doughnutchart = { labels: [], data: [] };
   $scope.lineChartColors = LINE_CHART_COLORS;
   $scope.lineChartOptions = LINE_CHART_OPTIONS;
+  $scope.barChartColors = BAR_CHART_COLORS;
+  $scope.barChartOptions = BAR_CHART_OPTIONS;
   $scope.doughnutChartColors = DOUGHNUT_CHART_COLORS;
   $scope.doughnutChartOptions = DOUGHNUT_CHART_OPTIONS;
 
@@ -88,6 +94,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
   var directories = beaver.getDirectories();
   var stories = cormorant.getStories();
   var storyStats = {};
+  var rssi = { min: 255, max: 0, sum: 0, count: 0 };
   var appearances = 0;
   var keepalives = 0;
   var displacements = 0;
@@ -141,6 +148,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
       device.receiverUrl = WHATAT_RECEIVER_ROOT + device.event.receiverId;
       devicesArray.push(device);
       addStoryStat(device.event.deviceUrl);
+      updateRssiStats(device.event.rssi);
     }
 
     return devicesArray;
@@ -177,6 +185,21 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     return stats;
   }
 
+  // Sample the RSSI from the previous period
+  function sampleRssi() {
+    var rssiSample = {};
+    if(rssi.count > 0) {
+      rssiSample = {
+        min: rssi.min,
+        max: rssi.max,
+        avg: Math.round(rssi.sum / rssi.count),
+        count: rssi.count
+      };
+    }
+    rssi = { min: 255, max: 0, sum: 0, count: 0 };
+    return rssiSample;
+  }
+
   // Update the line chart
   function updateLineChart() {
     $scope.linechart.data[0].push( { x: $scope.elapsedSeconds,
@@ -187,6 +210,11 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
       $scope.linechart.data[0].shift();
       $scope.linechart.data[1].shift();
     }
+  }
+
+  // Update the bar chart
+  function updateBarChart() {
+    $scope.barchart.data = [ $scope.rssi.max, $scope.rssi.avg, $scope.rssi.min ];
   }
 
   // Update the doughnut chart
@@ -241,6 +269,18 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     }
   }
 
+  // Add the device RSSI to the statistics
+  function updateRssiStats(deviceRssi) {
+    if(deviceRssi < rssi.min) {
+      rssi.min = deviceRssi;
+    }
+    else if(deviceRssi > rssi.max) {
+      rssi.max = deviceRssi;
+    }
+    rssi.sum += deviceRssi;
+    rssi.count++;
+  }
+
   // Periodic update of display variables
   function periodicUpdate() {
     storyStats = {};
@@ -248,7 +288,9 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     $scope.devices = sampleDevices(devices);
     $scope.directories = sampleDirectories(directories);
     $scope.curStats = sampleStats();
+    $scope.rssi = sampleRssi();
     updateLineChart();
+    updateBarChart();
     updateDoughnutChart();
   }
 
