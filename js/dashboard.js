@@ -10,6 +10,7 @@ DEFAULT_SOCKET_URL = API_ROOT;
 WHEREIS_TRANSMITTER_ROOT = API_ROOT + '/whereis/transmitter/';
 WHATAT_RECEIVER_ROOT = API_ROOT + '/whatat/receiver/';
 CONTEXTAT_DIRECTORY_ROOT = API_ROOT + '/contextat/directory/';
+DEFAULT_DIRECTORY_ID = 'Unspecified';
 UPDATE_PERIOD_SECONDS = 1;
 LINE_CHART_SAMPLES = 8;
 LINE_CHART_SERIES = [ 'Devices', 'Displacements' ];
@@ -25,20 +26,12 @@ LINE_CHART_OPTIONS = {
     }]
   }
 };
+BAR_CHART_LABELS = [ 'Max RSSI', 'Avg RSSI', 'Min RSSI' ];
 BAR_CHART_OPTIONS = {};
 DOUGHNUT_CHART_SAMPLES = 8;
-DOUGHNUT_CHART_OPTIONS = {
-  legend: {
-    display: false
-  },
-  animation: {
-    animateRotate: false
-  }
-};
-LINE_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#5a5a5a' ];
-BAR_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844' ];
-DOUGHNUT_CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
-                          '#f8b586', '#82b6cf', '#a9a9a9', '#5a5a5a' ];
+DOUGHNUT_CHART_OPTIONS = {};
+CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
+                 '#f8b586', '#82b6cf', '#a9a9a9', '#5a5a5a' ];
 
 
 /**
@@ -79,15 +72,11 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
                       displacements: 0, disappearances: 0 };
   $scope.rssi = {};
   $scope.stories = [];
-  $scope.linechart = { labels: [], series: LINE_CHART_SERIES, data: [[],[]] };
-  $scope.barchart = { labels: [ 'Max RSSI', 'Avg RSSI', 'Min RSSI' ], data: [] };
-  $scope.doughnutchart = { labels: [], data: [] };
-  $scope.lineChartColors = LINE_CHART_COLORS;
-  $scope.lineChartOptions = LINE_CHART_OPTIONS;
-  $scope.barChartColors = BAR_CHART_COLORS;
-  $scope.barChartOptions = BAR_CHART_OPTIONS;
-  $scope.doughnutChartColors = DOUGHNUT_CHART_COLORS;
-  $scope.doughnutChartOptions = DOUGHNUT_CHART_OPTIONS;
+  $scope.linechart = { labels: [], series: LINE_CHART_SERIES, data: [[],[]],
+                       options: LINE_CHART_OPTIONS };
+  $scope.barchart = { labels: BAR_CHART_LABELS, data: [], options: {} };
+  $scope.doughnutchart = { labels: [], data: [], options: {} };
+  $scope.chartColors = CHART_COLORS;
 
   // Variables accessible in the local scope
   var devices = beaver.getDevices();
@@ -123,23 +112,13 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
 
   // Handle an event
   function handleEvent(type, event) {
-    updateStories(event);
-  }
-
-  // Update the collection of stories
-  function updateStories(event) {
-    if(event.hasOwnProperty('deviceUrl')) {
-      cormorant.getStory(event.deviceUrl, function() {
-      });
-    }
-    if(event.hasOwnProperty('receiverUrl')) {
-      cormorant.getStory(event.receiverUrl, function() {
-      });
-    }
+    cormorant.getStory(event.deviceUrl, function() {
+      cormorant.getStory(event.receiverUrl, function() {});
+    });
   }
 
   // Sample the current state of all detected devices
-  function sampleDevices(devices) {
+  function sampleDevices() {
     var devicesArray = [];
 
     for(id in devices) {
@@ -151,23 +130,28 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
       updateRssiStats(device.event.rssi);
     }
 
-    return devicesArray;
+    $scope.devices = devicesArray;
   }
 
   // Sample the current state of the directories
-  function sampleDirectories(directories) {
+  function sampleDirectories() {
     var directoryArray = [];
 
     for(id in directories) {
       var directory = directories[id];
-      directory.id = id;
+      if(id !== 'null') {
+        directory.id = id;
+        directory.url = CONTEXTAT_DIRECTORY_ROOT + id;
+      }
+      else {    
+        directory.id = DEFAULT_DIRECTORY_ID;
+      } 
       directory.receiverCount = Object.keys(directory.receivers).length;
       directory.deviceCount = Object.keys(directory.devices).length;
-      directory.url = CONTEXTAT_DIRECTORY_ROOT + id;
       directoryArray.push(directory);
     }
 
-    return directoryArray;
+    $scope.directories = directoryArray;
   }
 
   // Sample the stats from the previous period
@@ -182,7 +166,8 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     keepalives = 0;
     displacements = 0;
     disappearances = 0;
-    return stats;
+
+    $scope.curStats = stats;
   }
 
   // Sample the RSSI from the previous period
@@ -190,14 +175,15 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     var rssiSample = {};
     if(rssi.count > 0) {
       rssiSample = {
-        min: rssi.min,
-        max: rssi.max,
-        avg: Math.round(rssi.sum / rssi.count),
-        count: rssi.count
+          min: rssi.min,
+          max: rssi.max,
+          avg: Math.round(rssi.sum / rssi.count),
+          count: rssi.count
       };
     }
     rssi = { min: 255, max: 0, sum: 0, count: 0 };
-    return rssiSample;
+
+    $scope.rssi = rssiSample;
   }
 
   // Update the line chart
@@ -283,12 +269,12 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
 
   // Periodic update of display variables
   function periodicUpdate() {
-    storyStats = {};
     $scope.elapsedSeconds += UPDATE_PERIOD_SECONDS;
-    $scope.devices = sampleDevices(devices);
-    $scope.directories = sampleDirectories(directories);
-    $scope.curStats = sampleStats();
-    $scope.rssi = sampleRssi();
+    storyStats = {};
+    sampleDevices();
+    sampleDirectories();
+    sampleStats();
+    sampleRssi();
     updateLineChart();
     updateBarChart();
     updateDoughnutChart();

@@ -50,8 +50,8 @@
                         chart-data="linechart.data"
                         chart-labels="linechart.labels"
                         chart-series="linechart.series"
-                        chart-colors="lineChartColors"
-                        chart-options="lineChartOptions">
+                        chart-colors="chartColors"
+                        chart-options="linechart.options">
                 </canvas>
               </div>
               <div class="col-md-6 well well-lg" style="background-color:#fcfcfc">
@@ -59,8 +59,8 @@
                         height="50" width="100"
                         chart-data="barchart.data"
                         chart-labels="barchart.labels"
-                        chart-colors="barChartColors"
-                        chart-options="barChartOptions">
+                        chart-colors="chartColors"
+                        chart-options="barchart.options">
                 </canvas>
               </div>
             </div>
@@ -70,8 +70,8 @@
                         height="50" width="100"
                         chart-data="doughnutchart.data"
                         chart-labels="doughnutchart.labels"
-                        chart-colors="doughnutChartColors"
-                        chart-options="doughnutChartOptions">
+                        chart-colors="chartColors"
+                        chart-options="doughnutchart.options">
                 </canvas>
               </div>
               <div class="col-md-6">
@@ -80,7 +80,8 @@
                     <tr ng-repeat="(id, story) in stories | limitTo: 8">
                       <td>
                         <span class="btn btn-xs btn-block"
-                              ng-style="{'background-color': doughnutChartColors[id], 'color': 'white'}">
+                              ng-style="{'background-color': chartColors[id],
+                                         'color': 'white'}">
                           <b>{{story.count}}</b>
                         </span> </td>
                       <td>
@@ -114,8 +115,11 @@
               <tbody>
                 <tr ng-repeat="directory in directories |
                                orderBy: '-deviceCount' | limitTo: 3">
-                  <td> <a ng-href="{{directory.url}}"
-                          target="_blank"> {{directory.id}} </a> </td>
+                  <td>
+                    <a ng-if="directory.url" ng-href="{{directory.url}}"
+                       target="_blank"> {{directory.id}} </a>
+                    <span ng-if="!directory.url"> {{directory.id}} </span>
+                  </td>
                   <td> {{directory.deviceCount}} </td>
                   <td> {{directory.receiverCount}} </td>
                 </tr>
