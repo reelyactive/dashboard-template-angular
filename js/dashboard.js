@@ -11,7 +11,7 @@ WHEREIS_TRANSMITTER_ROOT = API_ROOT + '/whereis/transmitter/';
 WHATAT_RECEIVER_ROOT = API_ROOT + '/whatat/receiver/';
 CONTEXTAT_DIRECTORY_ROOT = API_ROOT + '/contextat/directory/';
 DEFAULT_DIRECTORY_ID = 'Unspecified';
-UPDATE_PERIOD_SECONDS = 1;
+DEFAULT_UPDATE_MILLISECONDS = 1000;
 LINE_CHART_SAMPLES = 8;
 LINE_CHART_SERIES = [ 'Devices', 'Displacements' ];
 LINE_CHART_OPTIONS = {
@@ -41,8 +41,9 @@ CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
  * - beaver and cormorant (reelyActive)
  * - socket.io (btford)
  * - angular-chart (jtblin)
+ * - ui-bootstrap (Google)
  */
-angular.module('dashboard', ['btford.socket-io', 'chart.js',
+angular.module('dashboard', ['btford.socket-io', 'chart.js', 'ui.bootstrap',
                              'reelyactive.beaver', 'reelyactive.cormorant'])
 
 
@@ -79,6 +80,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
   $scope.chartColors = CHART_COLORS;
 
   // Variables accessible in the local scope
+  var updateSeconds = DEFAULT_UPDATE_MILLISECONDS / 1000;
   var devices = beaver.getDevices();
   var directories = beaver.getDirectories();
   var stories = cormorant.getStories();
@@ -269,7 +271,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
 
   // Periodic update of display variables
   function periodicUpdate() {
-    $scope.elapsedSeconds += UPDATE_PERIOD_SECONDS;
+    $scope.elapsedSeconds += updateSeconds;
     storyStats = {};
     sampleDevices();
     sampleDirectories();
@@ -280,5 +282,20 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js',
     updateDoughnutChart();
   }
 
-  $interval(periodicUpdate, UPDATE_PERIOD_SECONDS * 1000);
+  // Update the update period
+  $scope.updatePeriod = function(period) {
+    if(period) {
+      updateSeconds = period / 1000;
+      $scope.updateMessage = "Updating every " + updateSeconds + "s";
+      $interval.cancel($scope.updatePromise);
+      $scope.updatePromise = $interval(periodicUpdate, period);
+      periodicUpdate();
+    }
+    else {
+      $scope.updateMessage = "Updates paused";
+      $interval.cancel($scope.updatePromise);
+    }
+  };
+
+  $scope.updatePeriod(DEFAULT_UPDATE_MILLISECONDS);
 });

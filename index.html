@@ -35,6 +35,18 @@
              ng-click="navCollapsed = true">
           <ul class="nav navbar-nav navbar-right">
             <li class="active"><a href> Dashboard Template </a></li>
+            <li class="dropdown" uib-dropdown on-toggle="toggled(open)">
+              <a href class="dropdown-toggle" uib-dropdown-toggle role="button"
+                 data-toggle="dropdown" aria-haspopup="true"
+                 aria-expanded="false">
+                {{updateMessage}} <span class="caret"></span>
+              </a>
+              <ul class="dropdown-menu" uib-dropdown-menu role="menu">
+                <li role="menuitem"><a href ng-click="updatePeriod(null)">Pause updates</a></li>
+                <li role="menuitem"><a href ng-click="updatePeriod(1000)">Update every second</a></li>
+                <li role="menuitem"><a href ng-click="updatePeriod(5000)">Update every 5 seconds</a></li>
+              </ul>
+            </li>
           </ul>
         </div>
       </nav>
