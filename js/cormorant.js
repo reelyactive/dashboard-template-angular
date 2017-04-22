@@ -1,5 +1,5 @@
 /**
- * Copyright reelyActive 2016
+ * Copyright reelyActive 2016-2017
  * We believe in an open Internet of Things
  */
 
@@ -71,21 +71,21 @@ angular.module('reelyactive.cormorant', [])
         return callback(stories[url], url);
       }
       $http.defaults.headers.common.Accept = 'application/json, text/plain';
-      $http.get(url)
-        .success(function(data, status, headers, config) {
-          switch(typeof data) {
+      $http({ method: 'GET', url: url })
+        .then(function(response) { // Success
+          switch(typeof response.data) {
             case 'string':
-              data = extractFromHtml(data);
+              response.data = extractFromHtml(response.data);
             case 'object':
-              stories[url] = data;
-              callback(data, url);
+              stories[url] = response.data;
+              callback(response.data, url);
           }
-        })
-        .error(function(data, status, headers, config) {
-          console.log('cormorant: GET ' + url + ' returned status ' + status);
+        }, function(response) {    // Error
+          console.log('cormorant: GET ' + url + ' returned status ' +
+                      response.status);
           stories[url] = null;
           callback(null, url);
-        });
+      });
     };
 
     var getCombined = function(url1, url2, id, callback) {

@@ -1,5 +1,5 @@
 /**
- * Copyright reelyActive 2016
+ * Copyright reelyActive 2016-2017
  * We believe in an open Internet of Things
  */
 
@@ -256,20 +256,18 @@ angular.module('reelyactive.beaver', [])
 
     // Query the polling API
     function queryApi() {
-      $http.defaults.headers.common.Accept = 'application/json';
-      $http.get(pollingApiUrl)
-        .success(function(data, status, headers, config) {
-          if(data.hasOwnProperty('devices')) {
-            for(deviceId in data.devices) {
-              updatePolledDevice(deviceId, data.devices);
+      $http({ method: 'GET', url: pollingApiUrl })
+        .then(function(response) { // Success
+          if(response.data.hasOwnProperty('devices')) {
+            for(deviceId in response.data.devices) {
+              updatePolledDevice(deviceId, response.data.devices);
             }
             purgeDisappearances();
           }
-        })
-        .error(function(data, status, headers, config) {
+        }, function(response) {    // Error
           console.log('beaver: GET ' + pollingApiUrl + ' returned status ' +
-                      status);
-        });
+                      response.status);
+      });
     }
 
 
@@ -278,6 +276,7 @@ angular.module('reelyactive.beaver', [])
       if(!url || (typeof url !== 'string')) {
         return;
       }
+      $http.defaults.headers.common.Accept = 'application/json';
       interval = interval || DEFAULT_POLLING_MILLISECONDS;
       pollingApiUrl = url;
 
