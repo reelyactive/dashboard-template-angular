@@ -12,6 +12,11 @@ WHATAT_RECEIVER_ROOT = API_ROOT + '/whatat/receiver/';
 CONTEXTAT_DIRECTORY_ROOT = API_ROOT + '/contextat/directory/';
 DEFAULT_DIRECTORY_ID = 'Unspecified';
 DEFAULT_UPDATE_MILLISECONDS = 1000;
+DEFAULT_BEAVER_OPTIONS = {
+  mergeEvents: true,
+  mergeEventProperties: [ 'receiverId', 'receiverDirectory', 'rssi' ],
+  maintainDirectories: true
+};
 LINE_CHART_SAMPLES = 8;
 LINE_CHART_SERIES = [ 'Devices', 'Displacements' ];
 LINE_CHART_OPTIONS = {
@@ -39,30 +44,17 @@ CHART_COLORS = [ '#0770a2', '#ff6900', '#aec844', '#d0dd9e',
  * All of the JavaScript specific to the dashboard is contained inside this
  * angular module.  The only external dependencies are:
  * - beaver and cormorant (reelyActive)
- * - socket.io (btford)
  * - angular-chart (jtblin)
  * - ui-bootstrap (Google)
  */
-angular.module('dashboard', ['btford.socket-io', 'chart.js', 'ui.bootstrap',
-                             'reelyactive.beaver', 'reelyactive.cormorant'])
-
-
-/**
- * Socket Factory
- * Creates the websocket connection to the given URL using socket.io.
- */
-.factory('Socket', function(socketFactory) {
-  return socketFactory({
-    ioSocket: io.connect(DEFAULT_SOCKET_URL)
-  });
-})
-
+angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
+                             'reelyactive.cormorant'])
 
 /**
  * DashCtrl Controller
  * Handles the manipulation of all variables accessed by the HTML view.
  */
-.controller('DashCtrl', function($scope, $interval, Socket, beaver, cormorant) {
+.controller('DashCtrl', function($scope, $interval, beaver, cormorant) {
 
   // Variables accessible in the HTML scope
   $scope.elapsedSeconds = 0;
@@ -80,6 +72,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js', 'ui.bootstrap',
   $scope.chartColors = CHART_COLORS;
 
   // Variables accessible in the local scope
+  var socket = io.connect(DEFAULT_SOCKET_URL);
   var updateSeconds = DEFAULT_UPDATE_MILLISECONDS / 1000;
   var devices = beaver.getDevices();
   var directories = beaver.getDirectories();
@@ -92,7 +85,7 @@ angular.module('dashboard', ['btford.socket-io', 'chart.js', 'ui.bootstrap',
   var disappearances = 0;
 
   // beaver.js listens on the websocket for events
-  beaver.listen(Socket);
+  beaver.listen(socket, DEFAULT_BEAVER_OPTIONS);
 
   // Handle events pre-processed by beaver.js
   beaver.on('appearance', function(event) {
