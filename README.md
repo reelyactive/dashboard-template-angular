@@ -5,7 +5,7 @@ dashboard-template-angular
 Minimal template for client-side dashboard using AngularJS
 ----------------------------------------------------------
 
-Simple client-side dashboard template with inline documentation to be used as a friendly starting point for custom development.  See it live at [reelyactive.github.io/dashboard-template-angular](http://reelyactive.github.io/dashboard-template-angular).
+Simple client-side dashboard template with inline documentation to be used as a friendly starting point for custom development.  See it live at [reelyactive.github.io/dashboard-template-angular](https://reelyactive.github.io/dashboard-template-angular).
 
 Combines the [beaver.js](https://github.com/reelyactive/beaver), [cormorant.js](https://github.com/reelyactive/cormorant) and [cuttlefish.js](https://github.com/reelyactive/cuttlefish) modules.
 
@@ -15,7 +15,7 @@ License
 
 MIT License
 
-Copyright (c) 2016 reelyActive
+Copyright (c) 2016-2018 [reelyActive](https://www.reelyactive.com)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
