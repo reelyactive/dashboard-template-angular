@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/dashboard.js"></script>
   </head>
   <body ng-app="dashboard">
-	  <div ng-controller="DashCtrl">
+    <div ng-controller="DashCtrl">
       <nav class="navbar navbar-default" role="navigation">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle"
@@ -122,6 +122,7 @@
                 <tr>
                   <th> Directory </th>
                   <th> Device count </th>
+                  <th> Filtered count </th>
                   <th> Receiver count </th>
                 </tr>
               </thead>
@@ -134,6 +135,7 @@
                     <span ng-if="!directory.url"> {{directory.id}} </span>
                   </td>
                   <td> {{directory.deviceCount}} </td>
+                  <td> {{directory.filteredCount}} </td>
                   <td> {{directory.receiverCount}} </td>
                 </tr>
               </tbody>
@@ -200,6 +202,17 @@
                   <td> {{curStats.disappearances}} </td>
                   <td> {{cumStats.disappearances}} </td>
                 </tr>
+                <tr class="active"> <td colspan="3"> </td> </tr>
+                <tr>
+                  <td> passedFilters </td>
+                  <td> {{curStats.passedFilters}} </td>
+                  <td> {{cumStats.passedFilters}} </td>
+                </tr>
+                <tr>
+                  <td> failedFilters </td>
+                  <td> {{curStats.failedFilters}} </td>
+                  <td> {{cumStats.failedFilters}} </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -214,7 +227,7 @@
         <a href="http://www.reelyactive.com"
            uib-tooltip="We believe in an open Internet of Things"
            tooltip-placement="right">
-          &copy; reelyActive 2016-2017
+          &copy; reelyActive 2016-2018
         </a>
       </footer>
     </div>

@@ -1,5 +1,5 @@
 /**
- * Copyright reelyActive 2016-2017
+ * Copyright reelyActive 2016-2018
  * We believe in an open Internet of Things
  */
 
@@ -13,8 +13,10 @@ CONTEXTAT_DIRECTORY_ROOT = API_ROOT + '/contextat/directory/';
 DEFAULT_DIRECTORY_ID = 'Unspecified';
 DEFAULT_UPDATE_MILLISECONDS = 1000;
 DEFAULT_BEAVER_OPTIONS = {
+  disappearanceMilliseconds: 60000,
   mergeEvents: true,
-  mergeEventProperties: [ 'receiverId', 'receiverDirectory', 'rssi' ],
+  mergeEventProperties: [ 'receiverId', 'receiverDirectory', 'rssi',
+                          'passedFilters' ],
   maintainDirectories: true
 };
 LINE_CHART_SAMPLES = 8;
@@ -62,7 +64,8 @@ angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
   $scope.directories = [];
   $scope.cumStats = beaver.getStats();
   $scope.curStats = { appearances: 0, keepalives: 0,
-                      displacements: 0, disappearances: 0 };
+                      displacements: 0, disappearances: 0,
+                      passedFilters: 0, failedFilters: 0 };
   $scope.rssi = {};
   $scope.stories = [];
   $scope.linechart = { labels: [], series: LINE_CHART_SERIES, data: [[],[]],
@@ -83,6 +86,8 @@ angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
   var keepalives = 0;
   var displacements = 0;
   var disappearances = 0;
+  var passedFilters = 0;
+  var failedFilters = 0;
 
   // beaver.js listens on the websocket for events
   beaver.listen(socket, DEFAULT_BEAVER_OPTIONS);
@@ -107,6 +112,12 @@ angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
 
   // Handle an event
   function handleEvent(type, event) {
+    if(event.passedFilters) {
+      passedFilters++;
+    }
+    else {
+      failedFilters++;
+    }
     cormorant.getStory(event.deviceUrl, function() {
       cormorant.getStory(event.receiverUrl, function() {});
     });
@@ -134,13 +145,19 @@ angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
 
     for(id in directories) {
       var directory = directories[id];
+      directory.filteredCount = 0;
       if(id !== 'null') {
         directory.id = id;
         directory.url = CONTEXTAT_DIRECTORY_ROOT + id;
       }
       else {    
         directory.id = DEFAULT_DIRECTORY_ID;
-      } 
+      }
+      for(device in directory.devices) {
+        if(directory.devices[device].event.passedFilters) {
+          directory.filteredCount++;
+        }
+      }
       directory.receiverCount = Object.keys(directory.receivers).length;
       directory.deviceCount = Object.keys(directory.devices).length;
       directoryArray.push(directory);
@@ -155,12 +172,16 @@ angular.module('dashboard', ['chart.js', 'ui.bootstrap', 'reelyactive.beaver',
         appearances: appearances,
         keepalives: keepalives,
         displacements: displacements,
-        disappearances: disappearances
+        disappearances: disappearances,
+        passedFilters: passedFilters,
+        failedFilters: failedFilters
     };
     appearances = 0;
     keepalives = 0;
     displacements = 0;
     disappearances = 0;
+    passedFilters = 0;
+    failedFilters = 0;
 
     $scope.curStats = stats;
   }

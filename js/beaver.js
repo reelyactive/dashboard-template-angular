@@ -1,5 +1,5 @@
 /**
- * Copyright reelyActive 2016-2017
+ * Copyright reelyActive 2016-2018
  * We believe in an open Internet of Things
  */
 
@@ -9,6 +9,12 @@ DEFAULT_POLLING_MILLISECONDS = 5000;
 DEFAULT_MERGE_EVENTS = false;
 DEFAULT_MERGE_EVENT_PROPERTIES = [ 'event', 'time', 'receiverId', 'rssi' ];
 DEFAULT_MAINTAIN_DIRECTORIES = false;
+DEFAULT_OBSERVE_ONLY_FILTERED = false;
+DEFAULT_MIN_SESSION_DURATION_FILTER = 0;
+DEFAULT_MAX_SESSION_DURATION_FILTER = Number.MAX_SAFE_INTEGER;
+DEFAULT_IS_PERSON_FILTER = [ 'yes', 'probably' ];
+DEFAULT_WHITELIST_TAGS_FILTER = [ 'track' ];
+DEFAULT_BLACKLIST_TAGS_FILTER = [ 'ignore' ];
 
 
 angular.module('reelyactive.beaver', [])
@@ -18,13 +24,19 @@ angular.module('reelyactive.beaver', [])
     var devices = {};
     var directories = {};
     var stats = { appearances: 0, displacements: 0, keepalives: 0,
-                  disappearances: 0 };
+                  disappearances: 0, passedFilters: 0, failedFilters: 0 };
     var eventCallbacks = {};
     var pollingApiUrl;
     var disappearanceMilliseconds = DEFAULT_DISAPPEARANCE_MILLISECONDS;
     var mergeEvents = DEFAULT_MERGE_EVENTS;
     var mergeEventProperties = DEFAULT_MERGE_EVENT_PROPERTIES;
     var maintainDirectories = DEFAULT_MAINTAIN_DIRECTORIES;
+    var observeOnlyFiltered = DEFAULT_OBSERVE_ONLY_FILTERED;
+    var minSessionDurationFilter = DEFAULT_MIN_SESSION_DURATION_FILTER;
+    var maxSessionDurationFilter = DEFAULT_MAX_SESSION_DURATION_FILTER;
+    var isPersonFilter = DEFAULT_IS_PERSON_FILTER;
+    var whitelistTagsFilter = DEFAULT_WHITELIST_TAGS_FILTER;
+    var blacklistTagsFilter = DEFAULT_BLACKLIST_TAGS_FILTER;
 
 
     // Use the given event to update the status of the corresponding device
@@ -37,12 +49,26 @@ angular.module('reelyactive.beaver', [])
         updateLegacyEvent(event);
       }
 
+      applyFilters(event);
+
       var deviceId = event.deviceId;
       if(!devices.hasOwnProperty(deviceId)) {
         type = 'appearance';
       }
 
-      if(type === 'appearance') { stats.appearances++; }
+      if(type === 'appearance') {
+        if(!devices.hasOwnProperty(deviceId)) {
+          stats.appearances++;
+        }
+        else if(devices[deviceId].event.receiverId === event.receiverId) {
+          type = 'keep-alive';   // appearance is actually keep-alive
+          event.type = type;     //   because beaver.js never made it disappear
+        }
+        else {
+          type = 'displacement'; // appearance is actually displacement
+          event.type = type;     //   because beaver.js never made it disappear
+        }
+      }
       if(type === 'displacement') { stats.displacements++; }
       if(type === 'keep-alive') { stats.keepalives++; }
       if(type === 'disappearance') {
@@ -50,8 +76,23 @@ angular.module('reelyactive.beaver', [])
           delete devices[deviceId];
         }
         stats.disappearances++;
-        handleEventCallback(type, event);
+        if(isObservedByFilters(event)) { 
+          handleEventCallback(type, event);
+        }
         return;
+      }
+
+      if(event.passedFilters) {
+        stats.passedFilters++;
+      }
+      else {
+        stats.failedFilters++;
+        if(observeOnlyFiltered) {
+          if(devices.hasOwnProperty(deviceId)) {
+            delete devices[deviceId];
+          }
+          return;
+        }
       }
 
       if(mergeEvents && devices.hasOwnProperty(deviceId)) {
@@ -78,6 +119,12 @@ angular.module('reelyactive.beaver', [])
     }
 
 
+    // Verify if the given event is to be observed given the filters in place
+    function isObservedByFilters(event) {
+      return !(observeOnlyFiltered && !event.passedFilters);
+    }
+
+
     // Update the given event to the current format
     function updateLegacyEvent(event) {
       event.deviceId = event.tiraid.identifier.value;
@@ -85,6 +132,61 @@ angular.module('reelyactive.beaver', [])
       event.receiverId = event.tiraid.radioDecodings[0].identifier.value;
       event.rssi = event.tiraid.radioDecodings[0].rssi;
       return;
+    }
+
+
+    // Apply the filters to the given event and add passedFilters property
+    function applyFilters(event) {
+
+      if(event.hasOwnProperty('deviceTags') &&
+         Array.isArray(event.deviceTags)) {
+        for(var cTag = 0; cTag < event.deviceTags.length; cTag++) {
+          if(whitelistTagsFilter.indexOf(event.deviceTags[cTag]) >= 0) {
+            event.passedFilters = true;    // Whitelisted
+            return;
+          }
+          else if(blacklistTagsFilter.indexOf(event.deviceTags[cTag]) >= 0) {
+            event.passedFilters = false;   // Blacklisted
+            return;
+          }
+        }
+      }
+
+      if(event.hasOwnProperty('isPerson') &&
+         (isPersonFilter.indexOf(event.isPerson) < 0)) {
+        event.passedFilters = false;       // Failed isPerson
+        return;
+      }
+
+      if(event.hasOwnProperty('sessionDuration') &&
+         ((event.sessionDuration < minSessionDurationFilter) ||
+          (event.sessionDuration > maxSessionDurationFilter))) {
+        event.passedFilters = false;       // Failed session duration
+        return;
+      }
+
+      if(event.hasOwnProperty('receiverTags') &&
+         Array.isArray(event.receiverTags)) {
+        for(var cTag = 0; cTag < event.receiverTags.length; cTag++) {
+          var tag = event.receiverTags[cTag];
+          if(tag.indexOf('minRSSI=') === 0) {
+            var minRSSI = parseInt(tag.substr(8));
+            if(event.rssi < minRSSI) {
+              event.passedFilters = false; // Failed minimum RSSI
+              return;
+            }
+          }
+          else if(tag.indexOf('maxRSSI=') === 0) {
+            var maxRSSI = parseInt(tag.substr(8));
+            if(event.rssi > maxRSSI) {
+              event.passedFilters = false; // Failed maximum RSSI
+              return;
+            }
+          }
+        }
+      }
+
+      event.passedFilters = true;
     }
 
 
@@ -107,7 +209,8 @@ angular.module('reelyactive.beaver', [])
       var deviceId = event.deviceId;
 
       for(cDirectory in directories) {
-        if((directory === cDirectory) && (event.event !== 'disappearance')) {
+        if((directory === cDirectory) && (event.event !== 'disappearance') &&
+           isObservedByFilters(event)) {
           addReceiver(directory, event);
           directories[cDirectory].devices[deviceId] = devices[deviceId];
         }
@@ -119,7 +222,9 @@ angular.module('reelyactive.beaver', [])
       if(!directories.hasOwnProperty(directory)) {
         directories[directory] = { receivers: {}, devices: {} };
         addReceiver(directory, event);
-        directories[directory].devices[deviceId] = devices[deviceId];
+        if((event.event !== 'disappearance') && isObservedByFilters(event)) {
+          directories[directory].devices[deviceId] = devices[deviceId];
+        }
       }
     }
 
@@ -306,6 +411,19 @@ angular.module('reelyactive.beaver', [])
     };
 
 
+    // Set the filters
+    var setFilters = function(filters) {
+      filters = filters || {};
+      minSessionDurationFilter = filters.minSessionDuration ||
+                                 minSessionDurationFilter;
+      maxSessionDurationFilter = filters.maxSessionDuration ||
+                                 maxSessionDurationFilter;
+      isPersonFilter = filters.isPerson || isPersonFilter;
+      whitelistTagsFilter = filters.whitelistTags || whitelistTagsFilter;
+      blacklistTagsFilter = filters.blacklistTags || blacklistTagsFilter;
+    }
+
+
     // Handle options provided when listening/polling, if any
     function handleOptions(options) {
       options = options || {};
@@ -315,6 +433,8 @@ angular.module('reelyactive.beaver', [])
       mergeEventProperties = options.mergeEventProperties ||
                              mergeEventProperties;
       maintainDirectories = options.maintainDirectories || maintainDirectories;
+      observeOnlyFiltered = options.observeOnlyFiltered || observeOnlyFiltered;
+      setFilters(options.filters);
     }
 
 
@@ -326,6 +446,7 @@ angular.module('reelyactive.beaver', [])
       addDirectoryProperty: addDirectoryProperty,
       getDevices: function() { return devices; },
       getDirectories: function() { return directories; },
-      getStats: function() { return stats; }
+      getStats: function() { return stats; },
+      setFilters: setFilters
     }
   });
